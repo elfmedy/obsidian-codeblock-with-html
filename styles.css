@@ -11,7 +11,7 @@ div.code_with_html_block {
     position: relative;
     padding: var(--size-4-2) var(--size-4-4);
     min-height: 38px;
-    background-color: var(--code-background);
+    background-color: #F2F2F2;
     border-radius: var(--radius-s);
     white-space: var(--code-white-space);
     overflow-x: auto;
@@ -19,9 +19,9 @@ div.code_with_html_block {
 
 div.code_with_html_line {
     border: none;
-    color: var(--code-normal);
+    color: #000000;
     font-family: var(--font-monospace);
-    background-color: var(--code-background);
+    background-color: #F2F2F2;
     border-radius: var(--radius-s);
     font-size: var(--code-size);
     padding: 0.1em 0.25em;
