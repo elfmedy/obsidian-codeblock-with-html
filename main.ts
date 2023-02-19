@@ -6,7 +6,11 @@ export default class ExamplePlugin extends Plugin {
         this.registerMarkdownCodeBlockProcessor("with-html", (source, el, ctx) => {
             let rows: string [] = [];
             // split line with \n
-            rows = source.split("\n").filter((row) => row.length > 0);
+            //source.replace(/&nbsp;/g, ' ');
+            console.log("output: %s", source);
+            let src = source.replace(/&nbsp;/g, ' ');
+            console.log("src: %s", src);
+            rows = src.split("\n").filter((row) => row.length > 0);
             const div = el.createEl("div", { cls: "code_with_html_block" });
             for (let i = 0; i < rows.length; i++) {
                 // find <font color="xx"> tag, and change this line color with it's color attr
