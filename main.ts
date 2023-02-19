@@ -7,7 +7,8 @@ export default class ExamplePlugin extends Plugin {
             let rows: string [] = [];
             // split line with \n
             let src = source.replace(/&nbsp;/g, ' ');
-            rows = src.split("\n").filter((row) => row.length > 0);
+            // rows = src.split("\n").filter((row) => row.length > 0);
+            rows = src.split("\n");
             const div = el.createEl("div", { cls: "code_with_html_block" });
             for (let i = 0; i < rows.length; i++) {
                 // find <font color="xx"> tag, and change this line color with it's color attr
@@ -25,7 +26,8 @@ export default class ExamplePlugin extends Plugin {
                     }
                     cont.createEl("span", {text: str3 });
                 } else {
-                    div.createEl("div", { cls: "code_with_html_line", text: rows[i] });
+                    let innerTxt = ((rows[i].length == 0) && (i != rows.length - 1)) ? ' ' : rows[i]
+                    div.createEl("div", { cls: "code_with_html_line", text: innerTxt });
                 }
             }
         });
