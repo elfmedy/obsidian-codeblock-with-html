@@ -1,3 +1,13 @@
+## Usage
+
+codeblock with "with-html"
+
+<img src="images/org.png"/>
+
+postprocess to
+
+<img src="images/new.png"/>
+
 # Obsidian Sample Plugin
 
 This is a sample plugin for Obsidian (https://obsidian.md).

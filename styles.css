@@ -25,4 +25,5 @@ div.code_with_html_line {
     border-radius: var(--radius-s);
     font-size: var(--code-size);
     padding: 0.0em 0.25em;
+    line-height: var(--line-height-tight);
 }
