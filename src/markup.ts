@@ -8,9 +8,7 @@ export function parse(source: string): Parsed {
   for (const line of source.split('\n')) {
     const delimiters: number[] = [];
     for (let i = 0; i < line.length;) {
-      if (line.startsWith('\\^^', i)) {
-        hidden.push({ from: start + i, to: start + i + 1 }); i += 3;
-      } else if (line.startsWith('^^', i)) {
+      if (line.startsWith('^^', i)) {
         delimiters.push(start + i); i += 2;
       } else i++;
     }

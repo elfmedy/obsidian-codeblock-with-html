@@ -1,13 +1,12 @@
+.code-emphasis-font .code-emphasis-mark,
+.code-emphasis-font .code-emphasis-mark * {
+  color: var(--code-emphasis-font-color, #ff0000) !important;
+}
+.code-emphasis-background .code-emphasis-mark {
+  background-color: var(--code-emphasis-background-color, #ffff00);
+}
 .code-emphasis-mark {
-  background-color: color-mix(in srgb, var(--code-emphasis-color, #e5b94f) 32%, transparent);
   border-radius: 2px;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
-}
-.code-emphasis-preview {
-  padding: var(--size-4-4);
-  background: var(--code-background);
-  color: var(--code-normal);
-  font-family: var(--font-monospace);
-  white-space: pre-wrap;
 }

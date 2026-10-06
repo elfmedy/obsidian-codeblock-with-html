@@ -4,16 +4,17 @@
 
 Run `npm ci` and `npm run check` with Node.js 22.13+ or 24.
 
-Ten automated tests cover:
+Twelve automated tests cover:
 
-- Chinese locales and English fallback.
+- Chinese/English overrides, following the host locale, and English fallback.
+- Default and validated settings, optional font/background colors, and remembering disabled colors.
 - Multiple fragments and UTF-16 offsets (including emoji).
 - Preserving comments, indentation, blank lines and CRLF when removing markers.
-- Unclosed/empty delimiters and literal escapes.
+- Unclosed/empty delimiters and backslashes preserved before/inside/after marked text.
 - Multiline selection wrapping without toggle behavior.
 - Fence boundaries, tilde/long fences and excluded special processors.
 - Markers split across syntax token nodes, safe literal HTML rendering.
-- Reapplying emphasis after asynchronous host syntax highlighting without parsing escaped literal markers twice.
+- Reapplying emphasis after asynchronous host syntax highlighting without parsing the clean code twice.
 
 TypeScript, production bundling and release asset/version validation also run. ESLint uses the official recommended Obsidian rules; the portable DOM renderer retains two non-blocking `prefer-create-el` suggestions because it intentionally uses standard, owner-document DOM constructors for standalone DOM tests. There are no lint errors.
 
@@ -23,17 +24,19 @@ Tested in the existing **Obsidian Sandbox**, Obsidian 1.14.4 on Windows, using a
 
 Verified in the actual application:
 
-- Reading view strips valid markers, preserves syntax colors, and emphasizes code/comments identically.
+- Reading view strips valid markers and emphasizes code/comments identically. Default marked text is red with no background; disabling the font override preserves syntax colors.
 - Host asynchronous syntax highlighting does not erase emphasis.
-- Literal escaped markers and unmatched delimiters remain visible.
+- Backslashes do not escape markers. Selecting `fff` in `\fff` produces `\^^fff^^`, highlights only `fff`, and copies as `\fff`. Unmatched delimiters remain literal.
 - The native Copy code button calls the clipboard with clean text, retaining comments and whitespace. The clipboard writer was temporarily intercepted during this test; the user's system clipboard was not replaced.
 - A selected fragment is wrapped exactly; one Undo restores it.
 - Multiline wrapping skips blank lines and one Undo restores the original text.
 - Empty selections, selections outside code and selections crossing fences are rejected without edits.
 - Source mode has literal markers and no added decorations; Live Preview keeps markers editable and emphasizes contents.
-- The Chinese command and settings follow the app language. English/fallback translations are covered by the automated test.
-- The color control updates the shared background color, persists it, and restores the default; preview and searchable setting definitions exist.
-- Disabling the plugin restores source delimiters and clears its color variable; enabling/rerendering restores emphasis.
+- The language dropdown immediately updates command names and settings in both Chinese and English; reset returns to following Obsidian.
+- Font/background toggles work independently; both may be off. Color values are remembered while disabled and persisted across reloads. Pickers are disabled when the corresponding override is off.
+- Default red text and transparent background were checked with computed styles, including syntax-token spans. Font disabled with green background retains original token colors.
+- Settings have no preview. Restore defaults resets language, both toggles and colors; settings remain searchable.
+- Disabling the plugin restores source delimiters and clears its color variables and body classes; enabling/rerendering restores emphasis.
 
 Visual Reading view was inspected through a screenshot. CLI screenshots of the settings window returned the underlying editor frame, so settings were verified through their live DOM and color controls instead.
 

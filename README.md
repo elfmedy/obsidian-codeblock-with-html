@@ -24,7 +24,7 @@ Select text inside one ordinary fenced code block, then run **Code Emphasis: Hig
 - Edit delimiters directly to remove highlighting, or use normal Undo after the command.
 - Markers pair left to right on each line. Multiple fragments are supported; nesting is not.
 - Unclosed markers and empty pairs (`^^^^`) remain literal.
-- Write `\^^` for literal carets; Reading view and the copy button remove that escape backslash. Other backslashes remain unchanged.
+- Backslashes are always ordinary code characters, never escapes: `\^^fff^^` highlights only `fff` and copies as `\fff`. Paired literal `^^` on one line are interpreted as markup; there is no escape syntax.
 
 ## Views and copying
 
@@ -36,13 +36,17 @@ Select text inside one ordinary fenced code block, then run **Code Emphasis: Hig
 | Reading view Copy code button | Copies content without valid markers; preserves comments, indentation and line breaks |
 | Normal editor copy | Copies exactly the selected source, including markers |
 
-The original fence language stays unchanged. Syntax token styling is retained. The plugin does not classify comments or attempt to make code compilable.
+The original fence language stays unchanged. Unmarked text keeps its syntax colors; marked text uses the configured font color, or retains its original color when the font override is off. The plugin does not classify comments or attempt to make code compilable.
 
 Ordinary fenced blocks are processed automatically. Special blocks (Mermaid, math, Dataview, Tasks, query, Bases) and legacy `with-html` are excluded. The editor command and Live Preview currently support top-level backtick/tilde fences (up to three leading spaces), not fences nested in lists or blockquotes. Reading view works on ordinary rendered `pre > code` elements.
 
 ## Settings
 
-One highlight background color, a live preview, and Restore default. The color is blended with the existing background so code text retains its syntax colors in light and dark themes. Commands, settings and notices follow Obsidian: Chinese for Chinese locales, English otherwise. Restart/reload after changing Obsidian language.
+- **Language**: Follow Obsidian (default), 中文, or English. Changes apply immediately to settings, command names and notices. Auto uses Chinese for Chinese locales and English otherwise.
+- **Font color**: enabled by default, `#FF0000`. Turn off to preserve original text/syntax colors, not make text invisible.
+- **Background color**: off by default. Enable to choose a solid background color.
+- Each color toggle can be turned off independently. Chosen colors are remembered while off; both may be off at once. Copying still removes valid markers.
+- **Restore defaults** resets language and both color controls. There is no settings preview.
 
 ## Breaking change from 1.x
 
@@ -76,7 +80,9 @@ Runtime code uses no Node.js/Electron APIs. Desktop Sandbox verification and aut
 
 源码模式保留标记；实时预览保留标记并高亮内容；阅读模式隐藏标记。阅读模式的“复制代码”去除有效标记，保留注释、缩进和换行。编辑器普通复制仍保留原始文本。
 
-设置页只提供统一背景颜色、预览和恢复默认。界面跟随 Obsidian 的中英文设置，其他语言回退英文。
+设置提供“跟随 Obsidian（默认）／中文／English”，切换立即生效。字体颜色默认红色 `#FF0000`，背景默认无；两者可独立关闭，并保留已选颜色。字体颜色关闭表示使用原有文字颜色，不是隐藏文字。没有预览，支持恢复默认。
+
+反斜杠始终原样保留，不再用于转义。`\^^fff^^` 只高亮 `fff`，复制得到 `\fff`；成对的字面量 `^^` 会被当作标记，目前不提供转义语法。
 
 新版不兼容旧 HTML 格式，不自动修改旧笔记。插件 ID 已改为 `code-emphasis`，请禁用旧插件后安装新版。
 

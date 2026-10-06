@@ -1,26 +1,27 @@
-import { MarkdownRenderChild, Plugin, PluginSettingTab, Setting, Notice, type SettingDefinitionItem } from 'obsidian';
+import { MarkdownRenderChild, Plugin, PluginSettingTab, Setting, Notice, type Command, type SettingDefinitionItem } from 'obsidian';
 import { codeBlocks, parse, specialLanguages, wrapSelection } from './markup';
 import { decorateCode, renderCode } from './render';
 import { emphasisField } from './editor';
 import { t } from './i18n';
 
-const DEFAULT_COLOR = '#e5b94f';
-interface Settings { color: string }
+import { defaults, readSettings, type Settings, type Language } from './settings';
 export default class CodeEmphasis extends Plugin {
-  settings: Settings = { color: DEFAULT_COLOR };
+  settings: Settings = { ...defaults };
+  private highlightCommand?: Command;
+  private copyButtons = new Map<HTMLButtonElement, boolean>();
+  text(key: Parameters<typeof t>[1]): string { return t(this.settings.language, key); }
   private styledDocuments = new Set<Document>();
   private renderedBlocks = new Set<MarkdownRenderChild>();
   async onload(): Promise<void> {
-    const saved: unknown = await this.loadData();
-    if (saved && typeof saved === 'object' && 'color' in saved && typeof saved.color === 'string' && /^#[\da-f]{6}$/i.test(saved.color)) this.settings.color = saved.color;
+    this.settings = readSettings(await this.loadData());
     this.applyStyle(document);
     this.registerEvent(this.app.workspace.on('window-open', win => this.applyStyle(win.doc)));
-    this.register(() => { this.styledDocuments.forEach(doc => doc.body.setCssProps({ '--code-emphasis-color': '' })); this.styledDocuments.clear(); });
+    this.register(() => { this.styledDocuments.forEach(doc => { doc.body.removeClass('code-emphasis-font', 'code-emphasis-background'); doc.body.setCssProps({ '--code-emphasis-font-color': '', '--code-emphasis-background-color': '' }); }); this.styledDocuments.clear(); });
     this.register(() => { for (const child of this.renderedBlocks) child.unload(); this.renderedBlocks.clear(); });
     this.addSettingTab(new EmphasisSettings(this));
     this.registerEditorExtension(emphasisField);
-    this.addCommand({
-      id: 'highlight-selection', name: t('command'),
+    this.highlightCommand = this.addCommand({
+      id: 'highlight-selection', name: this.text('command'),
       editorCheckCallback: (checking, editor) => {
         const selection = editor.getSelection();
         const from = editor.posToOffset(editor.getCursor('from')), to = editor.posToOffset(editor.getCursor('to'));
@@ -55,46 +56,69 @@ export default class CodeEmphasis extends Plugin {
           code.setText(source);
         });
         let button = pre.querySelector<HTMLButtonElement>('button.copy-code-button');
-        if (!button) button = pre.createEl('button', { cls: 'copy-code-button', text: t('copy') });
-        button.setAttribute('aria-label', t('copy'));
+        const ownButton = !button;
+        if (!button) button = pre.createEl('button', { cls: 'copy-code-button', text: this.text('copy') });
+        button.setAttribute('aria-label', this.text('copy'));
+        this.copyButtons.set(button, ownButton);
+        const copyButton = button;
+        child.register(() => this.copyButtons.delete(copyButton));
         child.registerDomEvent(button, 'click', event => {
           event.preventDefault(); event.stopImmediatePropagation();
           void code.ownerDocument.defaultView?.navigator.clipboard.writeText(clean).then(() => {
-            new Notice(t('copied'));
-          }).catch(() => { new Notice(t('copyFailed')); });
+            new Notice(this.text('copied'));
+          }).catch(() => { new Notice(this.text('copyFailed')); });
         }, { capture: true });
       }
     }, 100);
   }
   applyStyle(doc: Document): void {
     this.styledDocuments.add(doc);
-    doc.body.setCssProps({ '--code-emphasis-color': this.settings.color });
+    doc.body.toggleClass('code-emphasis-font', this.settings.fontEnabled);
+    doc.body.toggleClass('code-emphasis-background', this.settings.backgroundEnabled);
+    doc.body.setCssProps({ '--code-emphasis-font-color': this.settings.fontColor, '--code-emphasis-background-color': this.settings.backgroundColor });
   }
-  async setColor(color: string): Promise<void> {
-    this.settings.color = /^#[\da-f]{6}$/i.test(color) ? color : DEFAULT_COLOR;
+  async saveSettings(patch: Partial<Settings>): Promise<void> {
+    this.settings = readSettings({ ...this.settings, ...patch });
     this.styledDocuments.forEach(doc => this.applyStyle(doc));
+    if (this.highlightCommand) this.highlightCommand.name = `${this.manifest.name}: ${this.text('command')}`;
+    this.copyButtons.forEach((own, button) => {
+      button.setAttribute('aria-label', this.text('copy'));
+      if (own) button.setText(this.text('copy'));
+    });
     await this.saveData(this.settings);
   }
 }
 class EmphasisSettings extends PluginSettingTab {
   constructor(private plugin: CodeEmphasis) { super(plugin.app, plugin); }
   getSettingDefinitions(): SettingDefinitionItem[] {
+    const text = (key: Parameters<typeof t>[1]) => this.plugin.text(key);
     return [
-      { name: t('color'), desc: t('colorDescription'), render: setting => { this.renderColor(setting); } },
-      { name: t('preview'), render: setting => { this.renderPreview(setting.settingEl); } },
+      { name: text('language'), render: setting => {
+        setting.addDropdown(dropdown => dropdown.addOptions({ auto: text('auto'), zh: '中文', en: 'English' })
+          .setValue(this.plugin.settings.language).onChange(async value => {
+            await this.plugin.saveSettings({ language: value as Language }); this.update();
+          }));
+      } },
+      { name: text('fontColor'), desc: text('fontDescription'), render: setting => { this.renderColor(setting, 'font'); } },
+      { name: text('backgroundColor'), desc: text('backgroundDescription'), render: setting => { this.renderColor(setting, 'background'); } },
+      { name: text('reset'), desc: text('resetDescription'), render: setting => {
+        setting.addButton(button => button.setButtonText(text('reset')).onClick(async () => {
+          await this.plugin.saveSettings({ ...defaults }); this.update();
+        }));
+      } },
     ];
   }
-  private renderColor(setting: Setting): void {
-    setting
-      .addColorPicker(picker => picker.setValue(this.plugin.settings.color).onChange(async value => { await this.plugin.setColor(value); }))
-      .addButton(button => button.setButtonText(t('reset')).onClick(async () => {
-        await this.plugin.setColor(DEFAULT_COLOR);
-        this.update();
-      }));
-  }
-  private renderPreview(container: HTMLElement): void {
-    const preview = container.createEl('pre', { cls: 'code-emphasis-preview' }).createEl('code');
-    preview.createSpan({ cls: 'code-emphasis-mark', text: t('example') }); preview.appendText('\n');
-    preview.createSpan({ cls: 'code-emphasis-mark', text: 'Start()' }); preview.appendText(';');
+  private renderColor(setting: Setting, kind: 'font' | 'background'): void {
+    const enabledKey = kind === 'font' ? 'fontEnabled' : 'backgroundEnabled';
+    const colorKey = kind === 'font' ? 'fontColor' : 'backgroundColor';
+    setting.addToggle(toggle => {
+      toggle.setTooltip(this.plugin.text('customColor')).setValue(this.plugin.settings[enabledKey]).onChange(async value => {
+        await this.plugin.saveSettings({ [enabledKey]: value }); this.update();
+      });
+    }).addColorPicker(picker => {
+      picker.setValue(this.plugin.settings[colorKey]).setDisabled(!this.plugin.settings[enabledKey]).onChange(async color => {
+        await this.plugin.saveSettings({ [colorKey]: color });
+      });
+    });
   }
 }
