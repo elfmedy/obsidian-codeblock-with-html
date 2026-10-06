@@ -1,11 +1,10 @@
 {
-	"id": "obsidian-codeblock-with-html",
-	"name": "codeblock with html",
-	"version": "1.0.0",
-	"minAppVersion": "0.15.0",
-	"description": "This is a sample plugin for Obsidian. This plugin demonstrates some of the capabilities of the Obsidian API.",
-	"author": "flyoverthecity@gmail.com",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
-	"isDesktopOnly": false
+  "id": "code-emphasis",
+  "name": "Code Emphasis",
+  "version": "2.0.0",
+  "minAppVersion": "1.13.0",
+  "description": "Highlight selected code and comments with lightweight ^^ markers.",
+  "author": "elfmedy",
+  "authorUrl": "https://github.com/elfmedy",
+  "isDesktopOnly": false
 }

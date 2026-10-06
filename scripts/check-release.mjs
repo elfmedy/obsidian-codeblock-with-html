@@ -1,0 +1,12 @@
+import { readFileSync, existsSync } from 'node:fs';
+import assert from 'node:assert/strict';
+const read = file => JSON.parse(readFileSync(file, 'utf8'));
+const manifest = read('manifest.json'), pkg = read('package.json'), versions = read('versions.json');
+assert.equal(manifest.version, pkg.version);
+assert.equal(versions[manifest.version], manifest.minAppVersion);
+assert.match(manifest.version, /^\d+\.\d+\.\d+$/);
+assert.match(manifest.id, /^[a-z-]+$/);
+assert(!manifest.id.includes('obsidian'));
+if (process.argv[2]) assert.equal(process.argv[2], manifest.version);
+for (const file of ['main.js', 'manifest.json', 'styles.css', 'LICENSE', 'README.md', 'package-lock.json']) assert(existsSync(file), `Missing ${file}`);
+console.log('Release files and versions verified.');

@@ -1,106 +1,83 @@
+# Code Emphasis
+
+[中文说明](#中文说明)
+
+A small Obsidian plugin for highlighting fragments of code with `^^text^^`.
+Code and personal comments share one style. No HTML, annotation types, or language detection.
+
 ## Usage
 
-codeblock with "with-html"
-
-<img src="images/org.png"/>
-
-postprocess to
-
-<img src="images/new.png"/>
-
-# Obsidian Sample Plugin
-
-This is a sample plugin for Obsidian (https://obsidian.md).
-
-This project uses Typescript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in Typescript Definition format, which contains TSDoc comments describing what it does.
-
-**Note:** The Obsidian API is still in early alpha and is subject to change at any time!
-
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Changes the default font color to red using `styles.css`.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open Sample Modal" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
-
-## First time developing plugins?
-
-Quick starting guide for new plugin devs:
-
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
-
-## Releasing new releases
-
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
-
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
-
-## Adding your plugin to the community plugin list
-
-- Check https://github.com/obsidianmd/obsidian-releases/blob/master/plugin-review.md
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
-
-## How to use
-
-- Clone this repo.
-- `npm i` or `yarn` to install dependencies
-- `npm run dev` to start compilation in watch mode.
-
-## Manually installing the plugin
-
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
-
-## Improve code quality with eslint (optional)
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- To use eslint with this project, make sure to install eslint from terminal:
-  - `npm install -g eslint`
-- To use eslint to analyze this project use this command:
-  - `eslint main.ts`
-  - eslint will then create a report with suggestions for code improvement by file and line number.
-- If your source code is in a folder, such as `src`, you can use eslint with this command to analyze all files in that folder:
-  - `eslint .\src\`
-
-## Funding URL
-
-You can include funding URLs where people who use your plugin can financially support it.
-
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
-
-```json
-{
-    "fundingUrl": "https://buymeacoffee.com"
+````markdown
+```c
+^^// Initialize before starting^^
+if (^^status^^ == READY) {
+    ^^Start()^^;
 }
 ```
+````
 
-If you have multiple URLs, you can also do:
+Select text inside one ordinary fenced code block, then run **Code Emphasis: Highlight selected text** from the command palette. Bind your own hotkey in Obsidian settings if desired.
 
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
-}
+- The command only wraps the selection; it does not toggle or interpret existing markers.
+- A multiline selection wraps each nonblank line separately. Whitespace and empty lines are retained.
+- No selection, selections outside a fence, and selections spanning fences do nothing.
+- Edit delimiters directly to remove highlighting, or use normal Undo after the command.
+- Markers pair left to right on each line. Multiple fragments are supported; nesting is not.
+- Unclosed markers and empty pairs (`^^^^`) remain literal.
+- Write `\^^` for literal carets; Reading view and the copy button remove that escape backslash. Other backslashes remain unchanged.
+
+## Views and copying
+
+| View | Behavior |
+| --- | --- |
+| Source mode | Editable literal markers |
+| Live Preview | Editable markers, with highlighted contents |
+| Reading view | Markers hidden, highlighted contents |
+| Reading view Copy code button | Copies content without valid markers; preserves comments, indentation and line breaks |
+| Normal editor copy | Copies exactly the selected source, including markers |
+
+The original fence language stays unchanged. Syntax token styling is retained. The plugin does not classify comments or attempt to make code compilable.
+
+Ordinary fenced blocks are processed automatically. Special blocks (Mermaid, math, Dataview, Tasks, query, Bases) and legacy `with-html` are excluded. The editor command and Live Preview currently support top-level backtick/tilde fences (up to three leading spaces), not fences nested in lists or blockquotes. Reading view works on ordinary rendered `pre > code` elements.
+
+## Settings
+
+One highlight background color, a live preview, and Restore default. The color is blended with the existing background so code text retains its syntax colors in light and dark themes. Commands, settings and notices follow Obsidian: Chinese for Chinese locales, English otherwise. Restart/reload after changing Obsidian language.
+
+## Breaking change from 1.x
+
+Version 2 uses plugin ID `code-emphasis` and name **Code Emphasis**. The GitHub repository remains the same. Disable/uninstall the old `obsidian-codeblock-with-html` plugin and install this version in `.obsidian/plugins/code-emphasis/`.
+
+There is no legacy HTML renderer or automatic migration. Existing notes are never rewritten automatically. Replace old `<font>` tags with `^^` and change `with-html` fences to a normal language yourself. Back up notes before manual conversion.
+
+## Install and develop
+
+For manual installation, copy `main.js`, `manifest.json`, and `styles.css` into your vault's `.obsidian/plugins/code-emphasis/` directory, then enable Code Emphasis.
+
+Development requires Node.js 22.13+ (or Node.js 24):
+
+```sh
+npm ci
+npm run check
+npm run dev
 ```
 
-## API Documentation
+`npm run check` runs official Obsidian ESLint rules, parser/DOM tests, TypeScript checks, production build, and release-file validation. Build configuration and the dependency lockfile live at the repository root. Compiled `main.js` is intentionally ignored by Git.
 
-See https://github.com/obsidianmd/obsidian-api
+Push a numeric tag matching `manifest.json` (for example `2.0.0`) to run the release workflow. It validates versions, creates production assets, generates build provenance and attaches all three installation files to a GitHub Release. A source commit alone does not publish a release or submit a community-directory entry.
+
+Runtime code uses no Node.js/Electron APIs. Desktop Sandbox verification and automated tests are described in `TESTING.md`; mobile-device verification remains a separate step.
+
+## 中文说明
+
+只有一个命令：**高亮所选文本**。选中代码块内的文字后执行，得到 `^^内容^^`。多行选择逐行包裹，空白行跳过；没有选区不操作。不会自动取消或合并高亮，删除标记请直接编辑，误操作可撤销。
+
+代码和注释完全相同，例如 `^^// 注释内容^^`、`^^# 注释内容^^`，无需识别语言或注释符号。普通代码块自动生效，不使用 `with-html`。
+
+源码模式保留标记；实时预览保留标记并高亮内容；阅读模式隐藏标记。阅读模式的“复制代码”去除有效标记，保留注释、缩进和换行。编辑器普通复制仍保留原始文本。
+
+设置页只提供统一背景颜色、预览和恢复默认。界面跟随 Obsidian 的中英文设置，其他语言回退英文。
+
+新版不兼容旧 HTML 格式，不自动修改旧笔记。插件 ID 已改为 `code-emphasis`，请禁用旧插件后安装新版。
+
+MIT license.
