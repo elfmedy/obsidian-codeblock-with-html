@@ -1,9 +1,9 @@
 {
   "id": "code-emphasis",
   "name": "Code Emphasis",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "minAppVersion": "1.13.0",
-  "description": "Highlight selected code and comments with lightweight ^^ markers.",
+  "description": "Highlight important code and comments in your notes.",
   "author": "elfmedy",
   "authorUrl": "https://github.com/elfmedy",
   "isDesktopOnly": false

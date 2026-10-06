@@ -4,8 +4,9 @@
 
 Run `npm ci` and `npm run check` with Node.js 22.13+ or 24.
 
-Twelve automated tests cover:
+Thirteen automated tests cover:
 
+- Per-fragment reveal rules for carets, boundary positions, intersecting selections and multiple cursors.
 - Chinese/English overrides, following the host locale, and English fallback.
 - Default and validated settings, optional font/background colors, and remembering disabled colors.
 - Multiple fragments and UTF-16 offsets (including emoji).
@@ -31,7 +32,8 @@ Verified in the actual application:
 - A selected fragment is wrapped exactly; one Undo restores it.
 - Multiline wrapping skips blank lines and one Undo restores the original text.
 - Empty selections, selections outside code and selections crossing fences are rejected without edits.
-- Source mode has literal markers and no added decorations; Live Preview keeps markers editable and emphasizes contents.
+- Source mode retains all literal markers. Live Preview hides paired markers when the selection is outside; entering a fragment reveals only that pair. Cross-fragment selections reveal the affected pairs.
+- Native Sandbox arrow-key movement traversed both delimiters and content. Moving the selection between hidden/revealed states leaves the document untouched; Undo after an edit restores the original text without extra history steps.
 - The language dropdown immediately updates command names and settings in both Chinese and English; reset returns to following Obsidian.
 - Font/background toggles work independently; both may be off. Color values are remembered while disabled and persisted across reloads. Pickers are disabled when the corresponding override is off.
 - Default red text and transparent background were checked with computed styles, including syntax-token spans. Font disabled with green background retains original token colors.

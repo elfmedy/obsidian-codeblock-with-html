@@ -5,6 +5,18 @@ import { parse, codeBlocks, wrapSelection } from '../src/markup';
 import { decorateCode, renderCode } from '../src/render';
 import { messageFor } from '../src/messages';
 import { defaults, readSettings, resolveLanguage } from '../src/settings';
+import { isEditingHighlight } from '../src/selection';
+test('Live Preview reveals only fragments intersecting a cursor or selection', () => {
+  const first = { from: 12, to: 15 }, second = { from: 22, to: 25 };
+  assert.equal(isEditingHighlight(first, [{ from: 0, to: 0 }]), false);
+  for (const pos of [10, 11, 12, 14, 15, 16, 17]) assert.equal(isEditingHighlight(first, [{ from: pos, to: pos }]), true);
+  assert.equal(isEditingHighlight(second, [{ from: 13, to: 13 }]), false);
+  assert.equal(isEditingHighlight(first, [{ from: 0, to: 10 }]), false);
+  assert.equal(isEditingHighlight(first, [{ from: 0, to: 11 }]), true);
+  assert.equal(isEditingHighlight(first, [{ from: 17, to: 30 }]), false);
+  assert.equal(isEditingHighlight(second, [{ from: 13, to: 23 }]), true);
+  assert.equal(isEditingHighlight(second, [{ from: 0, to: 0 }, { from: 24, to: 24 }]), true);
+});
 test('Chinese locales follow Obsidian; other locales fall back to English', () => {
   assert.equal(messageFor('zh', 'command'), '高亮所选文本');
   assert.equal(messageFor('zh-TW', 'fontColor'), '字体颜色');

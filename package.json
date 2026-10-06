@@ -1,7 +1,7 @@
 {
   "name": "code-emphasis",
-  "version": "2.0.0",
-  "description": "Highlight code fragments with lightweight inline markers.",
+  "version": "2.1.0",
+  "description": "Highlight important code and comments in your notes.",
   "private": true,
   "license": "MIT",
   "author": "elfmedy",
