@@ -17,6 +17,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
+      - run: python -m unittest discover -s tests -p test_migration.py
       - name: Verify version and tag
         run: node scripts/check-release.mjs "$GITHUB_REF_NAME"
       - uses: actions/attest-build-provenance@v2

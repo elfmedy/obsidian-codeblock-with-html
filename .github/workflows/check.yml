@@ -16,3 +16,4 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
+      - run: python -m unittest discover -s tests -p test_migration.py
